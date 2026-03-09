@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>英語單字挑戰：職場與生活技能</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #000; 
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; 
+            touch-action: none; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        canvas { display: block; touch-action: none; }
+        
+        #ui-layer { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            pointer-events: none; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            padding: env(safe-area-inset-top) 15px calc(env(safe-area-inset-bottom) + 12px) 15px; 
+            box-sizing: border-box; 
+        }
+        
+        .stats-container { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            pointer-events: auto; 
+        }
+
+        #question-box { 
+            background: rgba(255, 255, 255, 0.94); 
+            border-radius: 12px; 
+            padding: 8px 15px; 
+            text-align: center; 
+            font-size: 14px; 
+            font-weight: bold; 
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.2); 
+            margin: 0 auto; 
+            width: fit-content; 
+            min-width: 60%;
+            max-width: 90%; 
+            pointer-events: auto; 
+            border: 2px solid #3b82f6; 
+            transition: all 0.2s;
+            color: #1e3a8a;
+        }
+
+        @media (min-width: 768px) {
+            #question-box { 
+                font-size: 18px; 
+                padding: 12px 25px; 
+                max-width: 600px;
+            }
+        }
+
+        .heart { color: #fbbf24; font-size: 22px; margin-right: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        #overlay { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            color: white; 
+            z-index: 100; 
+            pointer-events: auto; 
+            text-align: center; 
+            padding: 20px;
+        }
+
+        .btn { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+            padding: 12px 40px; 
+            border-radius: 50px; 
+            font-size: 20px; 
+            cursor: pointer; 
+            border: none; 
+            margin-top: 15px; 
+            transition: transform 0.2s; 
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5); 
+            font-weight: bold;
+        }
+        
+        .btn:active { transform: scale(0.95); }
+
+        .damage-flash { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(255, 0, 0, 0.3); 
+            pointer-events: none; 
+            display: none; 
+            z-index: 50; 
+        }
+
+        #phase-announcer { 
+            position: absolute; 
+            top: 40%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: #fff; 
+            font-size: 36px; 
+            font-weight: 900; 
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.8); 
+            pointer-events: none; 
+            opacity: 0; 
+            transition: opacity 0.5s; 
+            letter-spacing: 3px; 
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-layer">
+    <div class="stats-container">
+        <div id="lives-display"></div>
+        <div class="flex flex-col items-end">
+            <div class="bg-white/95 px-3 py-0.5 rounded-full text-blue-600 font-bold shadow text-xs mb-1">
+                得分: <span id="score">0</span>
+            </div>
+            <div id="phase-tag" class="bg-black/60 px-2 py-0.5 rounded text-white text-[9px] border border-white/20 backdrop-blur-md uppercase tracking-wider">
+                PHASE 1: STORM TRACKING
+            </div>
+        </div>
+    </div>
+    <div id="question-box">準備起飛...</div>
+</div>
+
+<div id="phase-announcer">PHASE 1</div>
+
+<div id="overlay">
+    <h1 class="text-4xl md:text-6xl font-black mb-4 italic bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-white uppercase">Steampunk Pilot</h1>
+    <p class="text-base md:text-xl mb-6 text-blue-100 max-w-md">
+        英語單字挑戰：職場與生活技能<br>
+        <span class="text-amber-400">滑動螢幕</span> 控制飛機。避開危險，收集正確答案！<br>
+        <span class="text-purple-400 font-bold">規則：</span> 選錯單字會損失 1 顆星星血量。
+    </p>
+    <button class="btn" onclick="startGame()">正式起飛</button>
+</div>
+
+<div id="damage-flash" class="damage-flash"></div>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const questionBox = document.getElementById('question-box');
+    const scoreDisplay = document.getElementById('score');
+    const livesDisplay = document.getElementById('lives-display');
+    const phaseTag = document.getElementById('phase-tag');
+    const announcer = document.getElementById('phase-announcer');
+    const overlay = document.getElementById('overlay');
+    const flash = document.getElementById('damage-flash');
+
+    function createImage(localSrc, fallback) {
+        const img = new Image();
+        img.isReady = false;
+        img.onload = () => { img.isReady = true; };
+        img.onerror = () => { if (fallback && img.src.indexOf(fallback) === -1) { img.src = fallback; } };
+        img.src = localSrc;
+        return img;
+    }
+
+    const planeImg = createImage('plane.png', 'https://i.ibb.co/V9m8S9n/steampunk-plane.png');
+    const sphinxImg = createImage('sphinx.png', 'https://i.ibb.co/L5hY8pS/sphinx.png');
+    const ufoImg = createImage('ufo.png', 'https://i.ibb.co/6P0qL9r/ufo.png');
+
+    function isImgAvailable(img) { return img.isReady || (img.complete && img.naturalWidth > 0); }
+
+    let gameActive = false;
+    let score = 0;
+    let lives = 5; 
+    let currentQuestionIdx = 0;
+    let isMobile = window.innerWidth < 768;
+    let plane = { x: 80, y: 150, w: isMobile ? 100 : 150, h: isMobile ? 56 : 84, targetX: 80, targetY: 150, angle: 0, isProtected: false };
+    
+    let obstacles = [];
+    let words = [];
+    let mountains = [];
+    let backMountains = [];
+    let stars = [];
+    let sphinxAttacks = []; 
+    let runway = null;
+    let frameCount = 0;
+    let currentPhase = 1;
+    let sphinxScrollX = 0;
+    let scrollSpeed = 0; 
+    let forceShelterOnNextMountain = false;
+
+    const commonDistractors = ["break", "open", "paper", "ticket", "move", "box", "lose", "increase", "wall", "plain", "informal", "remove", "guest", "doctor", "manual", "lot", "follow", "pilot", "driver", "shoes"];
+
+    const questions = [
+        { q: "I will ______ the magazine while I wait for the doctor.", options: ["look through", "break"], correct: "look through" },
+        { q: "If nobody answers the phone, please ______.", options: ["leave a message", "open"], correct: "leave a message" },
+        { q: "You need to update your ______ before applying for the job.", options: ["resume", "paper"], correct: "resume" },
+        { q: "Did you make a ______ at the restaurant for tonight?", options: ["reservation", "ticket"], correct: "reservation" },
+        { q: "Can you help me ______ a meeting for next week?", options: ["arrange", "move"], correct: "arrange" },
+        { q: "Make sure the ______ is tight so the water doesn't spill.", options: ["lid", "box"], correct: "lid" },
+        { q: "Our team managed to ______ the champions last night.", options: ["beat", "lose"], correct: "beat" },
+        { q: "This medicine will help ______ the pain in your back.", options: ["ease", "increase"], correct: "ease" },
+        { q: "Please put the books back on the top ______.", options: ["shelf", "wall"], correct: "shelf" },
+        { q: "We are going to a ______ restaurant for our anniversary.", options: ["fancy", "plain"], correct: "fancy" },
+        { q: "I felt ______ in my suit because everyone else wore jeans.", options: ["overdressed", "informal"], correct: "overdressed" },
+        { q: "Please ______ your photo to the application form.", options: ["attach", "remove"], correct: "attach" },
+        { q: "The ______ brought us our drinks very quickly.", options: ["server", "guest"], correct: "server" },
+        { q: "The ______ is busy answering phone calls and organizing files.", options: ["secretary", "doctor"], correct: "secretary" },
+        { q: "Most ______ devices now come with a touch screen.", options: ["electronic", "manual"], correct: "electronic" },
+        { q: "Would you like a small ______ of chocolate cake?", options: ["bit", "lot"], correct: "bit" },
+        { q: "The guide will ______ the tourists through the forest.", options: ["lead", "follow"], correct: "lead" },
+        { q: "We need a ______ to fix the computer network.", options: ["technician", "pilot"], correct: "technician" },
+        { q: "My car broke down, so I took it to a ______.", options: ["mechanic", "driver"], correct: "mechanic" },
+        { q: "She bought some new ______ for the cold winter.", options: ["clothes", "shoes"], correct: "clothes" }
+    ];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        isMobile = canvas.width < 768;
+        plane.w = isMobile ? 100 : 150;
+        plane.h = isMobile ? 56 : 84;
+        initMountains();
+    }
+
+    function initMountains() {
+        mountains = []; backMountains = [];
+        const count = isMobile ? 10 : 18;
+        const step = canvas.width / (count - 1);
+        for(let i=0; i<count + 5; i++) {
+            backMountains.push({ x: i * step, h: 50 + Math.random() * 100 });
+            mountains.push(generateOneMountain(i * step, i < 3 ? false : null));
+        }
+    }
+
+    function generateOneMountain(xValue, forced = null) {
+        let spawnShelter = false;
+        if (forced !== null) { spawnShelter = forced; } 
+        else {
+            if (forceShelterOnNextMountain) { spawnShelter = true; forceShelterOnNextMountain = false; } 
+            else { spawnShelter = Math.random() > 0.3; }
+        }
+        return { 
+            x: xValue, h: (isMobile ? 100 : 150) + Math.random() * (isMobile ? 150 : 250), 
+            seed: Math.random(), isSharp: Math.random() > 0.7, hasShelter: spawnShelter 
+        };
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    function updatePointer(x, y) { if (!gameActive) return; plane.targetX = x; plane.targetY = y; }
+    window.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
+    window.addEventListener('touchstart', (e) => { if (e.target.tagName !== 'BUTTON') updatePointer(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+    window.addEventListener('touchmove', (e) => { updatePointer(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive: false});
+
+    function startGame() {
+        gameActive = true; score = 0; lives = 5; 
+        currentQuestionIdx = 0; currentPhase = 1;
+        obstacles = []; words = []; sphinxAttacks = []; runway = null; sphinxScrollX = 0;
+        scrollSpeed = 0; frameCount = 0; forceShelterOnNextMountain = false;
+        overlay.style.display = 'none';
+        plane.x = 80; plane.y = canvas.height/2; plane.targetX = 80; plane.targetY = canvas.height/2;
+        plane.isProtected = false;
+        stars = Array.from({length: isMobile ? 40 : 100}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2.5 }));
+        announcePhase(1); updateUI(); spawnNextQuestion();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function announcePhase(p) {
+        currentPhase = p;
+        obstacles = [];
+        sphinxAttacks = [];
+        announcer.innerText = `PHASE ${p}`; announcer.style.opacity = '1';
+        setTimeout(() => announcer.style.opacity = '0', 2000);
+        const tags = ["Storm Tracking", "Sphinx Ruins", "Cosmic Void", "Landing"];
+        phaseTag.innerText = `PHASE ${p}: ${tags[p-1] || ""}`;
+    }
+
+    function updateUI() {
+        scoreDisplay.innerText = score;
+        const heartCount = Math.max(0, Math.ceil(lives));
+        livesDisplay.innerHTML = Array.from({ length: heartCount }, () => `<span class="heart">⭐</span>`).join('');
+        if (currentQuestionIdx < questions.length) {
+            questionBox.innerText = questions[currentQuestionIdx].q;
+        }
+    }
+
+    function spawnNextQuestion() {
+        if (currentQuestionIdx >= questions.length) return;
+        
+        if (currentQuestionIdx === 9 && currentPhase === 1) announcePhase(2);
+        if (currentQuestionIdx === 14 && currentPhase === 2) announcePhase(3);
+        
+        words = []; 
+        const q = questions[currentQuestionIdx];
+        let optionsToSpawn = [];
+        optionsToSpawn.push({ text: q.correct, correct: true });
+        q.options.forEach(opt => { if (opt !== q.correct) optionsToSpawn.push({ text: opt, correct: false }); });
+
+        let distractorCount = isMobile ? 3 : 5;
+        for (let i = 0; i < distractorCount; i++) {
+            const randomWord = commonDistractors[Math.floor(Math.random() * commonDistractors.length)];
+            if (randomWord !== q.correct && !optionsToSpawn.some(o => o.text === randomWord)) {
+                optionsToSpawn.push({ text: randomWord, correct: false });
+            }
+        }
+
+        const stepX = isMobile ? 350 : 450;
+        optionsToSpawn.sort(() => Math.random() - 0.5);
+        optionsToSpawn.forEach((item, i) => {
+            words.push({ 
+                text: item.text, x: canvas.width + 400 + (i * stepX), 
+                y: 60 + Math.random() * (canvas.height * 0.35), 
+                w: isMobile ? 120 : 160, h: isMobile ? 40 : 50, correct: item.correct 
+            });
+        });
+    }
+
+    function triggerFlash() { flash.style.display = 'block'; setTimeout(() => flash.style.display = 'none', 100); }
+
+    function drawPeakShelter(mountX, mountY) {
+        const sw = isMobile ? 90 : 130, sh = isMobile ? 70 : 105;
+        const houseY = mountY - sh;
+        ctx.save();
+        ctx.translate(mountX, houseY);
+        ctx.shadowBlur = 20; ctx.shadowColor = '#4ade80';
+        ctx.fillStyle = '#444'; ctx.beginPath(); ctx.roundRect(-sw/2, 0, sw, sh, 5); ctx.fill();
+        ctx.shadowBlur = 0; ctx.fillStyle = '#222';
+        const winSize = isMobile ? 25 : 30;
+        for(let r=0; r<2; r++) { for(let c=0; c<2; c++) { ctx.fillRect(-sw/2 + 10 + (c*(sw/2)), 15 + (r*25), winSize, winSize*0.6); } }
+        ctx.fillStyle = '#86efac'; ctx.shadowBlur = 15; ctx.shadowColor = '#4ade80';
+        ctx.fillRect(-sw/4, sh/2, sw/2, sh/2);
+        ctx.fillStyle = 'white'; ctx.font = `bold ${isMobile ? 10 : 12}px Arial`; ctx.textAlign = 'center'; ctx.fillText('REFUGE', 0, -10);
+        ctx.restore();
+        if (plane.x > mountX - sw/2 && plane.x < mountX + sw/2 && plane.y > houseY && plane.y < mountY) { plane.isProtected = true; }
+    }
+
+    function drawRealisticMountains() {
+        const groundY = canvas.height;
+        const stepX = canvas.width / (isMobile ? 10 : 14);
+        ctx.fillStyle = 'rgba(80, 50, 20, 0.4)';
+        ctx.beginPath(); ctx.moveTo(0, groundY);
+        backMountains.forEach(m => { m.x -= (scrollSpeed * 0.3); ctx.lineTo(m.x, groundY - m.h); });
+        ctx.lineTo(canvas.width + 500, groundY); ctx.fill();
+        if (backMountains.length > 0 && backMountains[0].x < -stepX) {
+            let last = backMountains[backMountains.length - 1];
+            backMountains.shift(); backMountains.push({ x: last.x + stepX, h: 50 + Math.random() * 100 });
+        }
+        for (let i = 0; i < mountains.length - 1; i++) {
+            let p1 = mountains[i]; let p2 = mountains[i+1];
+            p1.x -= scrollSpeed;
+            let midX = (p1.x + p2.x) / 2;
+            let peakY = groundY - Math.max(p1.h, p2.h);
+            if (p1.isSharp) peakY -= 40;
+            let mGrad = ctx.createLinearGradient(0, peakY, 0, groundY);
+            mGrad.addColorStop(0, '#5d2b06'); mGrad.addColorStop(1, '#1a0d00'); 
+            ctx.fillStyle = mGrad; ctx.beginPath();
+            ctx.moveTo(p1.x, groundY); ctx.lineTo(p1.x, groundY - p1.h);
+            if (p1.isSharp) ctx.lineTo(midX, peakY - 20); else ctx.lineTo(midX, peakY);
+            ctx.lineTo(p2.x, groundY - p2.h); ctx.lineTo(p2.x, groundY); ctx.fill();
+            if (p1.hasShelter) drawPeakShelter(midX, peakY);
+        }
+        if (mountains.length > 0 && mountains[0].x < -450) {
+            let last = mountains[mountains.length - 1];
+            mountains.shift(); mountains.push(generateOneMountain(last.x + stepX));
+        }
+    }
+
+    function drawStrongTornado(obs) {
+        obs.x -= (scrollSpeed + 0.8); 
+        obs.timer = (obs.timer || 0) + 1;
+        const swirlCount = isMobile ? 12 : 18;
+        const baseWidth = isMobile ? 60 : 100;
+        const height = canvas.height * 1.3;
+        ctx.save();
+        for (let i = 0; i < swirlCount; i++) {
+            const hRatio = i / swirlCount;
+            const currentY = canvas.height - (hRatio * height);
+            const sway = Math.sin(obs.timer * 0.05 + hRatio * 5) * 40;
+            const swirlWidth = baseWidth * (1 + hRatio * 3.5); 
+            const rotation = (obs.timer * 0.15) + (i * 0.8);
+            ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = `rgba(200, 200, 220, ${0.1 + (1 - hRatio) * 0.4})`;
+            ctx.ellipse(obs.x + sway, currentY, swirlWidth, 10 * (1 + hRatio), rotation, 0, Math.PI * 2); ctx.stroke();
+            if (Math.abs(currentY - plane.y) < 40) { obs.lastSway = sway; obs.lastWidth = swirlWidth; }
+        }
+        ctx.restore();
+        const planeDistX = Math.abs(plane.x - (obs.x + (obs.lastSway || 0)));
+        if (planeDistX < (obs.lastWidth || baseWidth) * 0.8 + 20) {
+            if (!plane.isProtected && !obs.hasHit) { 
+                lives = Math.max(0, lives - 1); 
+                obs.hasHit = true; triggerFlash(); updateUI();
+            }
+        }
+    }
+
+    function drawJaggedLightning(x1, y1, x2, y2, color = '#ff3333', weight = 5) {
+        ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = isMobile ? weight * 0.6 : weight; ctx.shadowBlur = 20; ctx.shadowColor = color;
+        ctx.beginPath(); ctx.moveTo(x1, y1);
+        let segments = 8;
+        for (let i = 1; i < segments; i++) {
+            let px = x1 + ((x2 - x1) / segments) * i + (Math.random() - 0.5) * 40;
+            let py = y1 + ((y2 - y1) / segments) * i + (Math.random() - 0.5) * 40;
+            ctx.lineTo(px, py);
+        }
+        ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore();
+    }
+
+    function drawGizaSphinxRealistic(offsetX) {
+        const groundY = canvas.height - 60;
+        ctx.save();
+        const cycleWidth = canvas.width * (isMobile ? 2.5 : 2);
+        const shiftX = -offsetX % cycleWidth;
+        ctx.translate(shiftX, 0);
+        for(let loop = 0; loop < 2; loop++) {
+            const startX = loop * cycleWidth + 400;
+            const sx = startX + 600, sy = groundY;
+            const sW = isMobile ? 450 : 600, sH = isMobile ? 300 : 400;
+            if (isImgAvailable(sphinxImg)) { ctx.drawImage(sphinxImg, sx - sW/2, sy - sH, sW, sH); }
+            const eyeX = sx; const eyeY = sy - sH * 0.88;
+            const attack = sphinxAttacks.find(a => a.id === loop);
+            if (attack) {
+                if (attack.state === 'charging') {
+                    const pulse = Math.abs(Math.sin(frameCount * 0.15));
+                    ctx.save(); ctx.shadowBlur = 20 * pulse; ctx.shadowColor = '#facc15';
+                    ctx.fillStyle = `rgba(255, 255, 100, ${0.4 + pulse * 0.6})`;
+                    ctx.beginPath(); ctx.arc(eyeX, eyeY, 8 + pulse * 4, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                } else if (attack.state === 'firing') {
+                    const absEyeX = eyeX + shiftX;
+                    ctx.restore(); ctx.save();
+                    drawJaggedLightning(absEyeX, eyeY, attack.targetX, attack.targetY, '#ff3333', 5);
+                    if (!plane.isProtected && !attack.hasHit) {
+                        const dist = distToSegment({x: plane.x, y: plane.y}, {x: absEyeX, y: eyeY}, {x: attack.targetX, y: attack.targetY});
+                        if (dist < 45) { lives -= 0.5; attack.hasHit = true; triggerFlash(); updateUI(); }
+                    }
+                    ctx.translate(shiftX, 0);
+                }
+            }
+        }
+        ctx.restore();
+    }
+
+    function distToSegment(p, v, w) {
+        const l2 = Math.pow(v.x - w.x, 2) + Math.pow(v.y - w.y, 2);
+        if (l2 === 0) return Math.sqrt(Math.pow(p.x - v.x, 2) + Math.pow(p.y - v.y, 2));
+        let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return Math.sqrt(Math.pow(p.x - (v.x + t * (w.x - v.x)), 2) + Math.pow(p.y - (v.y + t * (w.y - v.y)), 2));
+    }
+
+    function gameLoop() {
+        if (!gameActive) return; frameCount++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        plane.isProtected = false; 
+
+        let dx = (plane.targetX - plane.x) * 0.12; let dy = (plane.targetY - plane.y) * 0.12;
+        scrollSpeed = dx > 0 ? dx * 1.5 : 0; 
+        plane.x += dx; plane.y += dy; plane.angle = dy * 0.05;
+        plane.x = Math.max(40, Math.min(canvas.width - 40, plane.x));
+        plane.y = Math.max(40, Math.min(canvas.height - 40, plane.y));
+
+        if (currentPhase === 1) {
+            let g = ctx.createLinearGradient(0,0,0,canvas.height); g.addColorStop(0, '#0c4a6e'); g.addColorStop(1, '#7dd3fc');
+            ctx.fillStyle = g; ctx.fillRect(0,0,canvas.width, canvas.height);
+            drawRealisticMountains();
+            let curM = mountains.find(m => Math.abs(m.x - plane.x) < 35);
+            if(curM && plane.y > canvas.height - curM.h - 20) { if (!plane.isProtected) { lives -= 0.02; updateUI(); } }
+        } else if (currentPhase === 2) {
+            let dGrad = ctx.createLinearGradient(0, 0, 0, canvas.height); dGrad.addColorStop(0, '#fef3c7'); dGrad.addColorStop(1, '#fde68a');
+            ctx.fillStyle = dGrad; ctx.fillRect(0,0,canvas.width, canvas.height);
+            sphinxScrollX += scrollSpeed; drawGizaSphinxRealistic(sphinxScrollX);
+            if (frameCount % 450 === 0) { 
+                sphinxAttacks = [0, 1].map(id => ({ id, timer: 140, state: 'charging', targetX: Math.random() * canvas.width, targetY: Math.random() * canvas.height, hasHit: false })); 
+            }
+            for (let i = sphinxAttacks.length - 1; i >= 0; i--) {
+                const a = sphinxAttacks[i]; a.timer--;
+                if (a.timer > 60) a.state = 'charging'; else if (a.timer > 0) a.state = 'firing'; else sphinxAttacks.splice(i, 1);
+            }
+        } else if (currentPhase === 3) {
+            ctx.fillStyle = '#020617'; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = 'white'; stars.forEach(s => { s.x -= (scrollSpeed + s.s); if(s.x < 0) s.x = canvas.width; ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill(); });
+        }
+
+        const spawnInterval = currentPhase === 1 ? (isMobile ? 180 : 250) : (isMobile ? 240 : 360);
+        if (currentQuestionIdx < questions.length && frameCount % spawnInterval === 0 && scrollSpeed > 0.3) {
+            if (currentPhase === 1) {
+                obstacles.push({ type: 'tornado', x: canvas.width + 500, timer: 0, hasHit: false });
+                forceShelterOnNextMountain = true; 
+            } else if (currentPhase === 2) {
+                obstacles.push({ type: 'mummy', emoji: '🧟', x: canvas.width + 150, y: 150 + Math.random() * (canvas.height - 300), s: 6 });
+            } else if (currentPhase === 3) {
+                for (let k = 0; k < 3; k++) {
+                    obstacles.push({ 
+                        type: 'ufo', emoji: '🛸', x: canvas.width + 200 + (k * 180), y: 100 + Math.random() * (canvas.height - 200), s: 2,
+                        attackTimer: 120 + Math.random() * 60, attackState: 'idle', randomTargetX: Math.random() * canvas.width, randomTargetY: Math.random() * canvas.height
+                    });
+                }
+            }
+        }
+
+        obstacles.forEach((obs, i) => {
+            if (obs.type === 'tornado') { drawStrongTornado(obs); if (obs.x < -800) obstacles.splice(i, 1); }
+            else {
+                obs.x -= (scrollSpeed + (obs.s || 5)); 
+                if (obs.type === 'ufo') {
+                    if (currentPhase === 3) {
+                        obs.attackTimer--;
+                        if (obs.attackTimer === 40) { obs.randomTargetX = Math.random() * canvas.width; obs.randomTargetY = Math.random() * canvas.height; }
+                        if (obs.attackTimer < 40 && obs.attackTimer > 0) obs.attackState = 'charging';
+                        else if (obs.attackTimer <= 0) {
+                            obs.attackState = 'firing';
+                            if (obs.attackTimer === 0) obs.hasHitLaser = false;
+                            if (obs.attackTimer < -20) { obs.attackTimer = 180; obs.attackState = 'idle'; }
+                        }
+                    }
+                    const uW = isMobile ? 120 : 180, uH = isMobile ? 70 : 110;
+                    if (isImgAvailable(ufoImg)) { ctx.drawImage(ufoImg, obs.x - uW/2, obs.y - uH/2, uW, uH); }
+                    else { ctx.font = (isMobile ? '60px' : '90px') + ' Arial'; ctx.textAlign = 'center'; ctx.fillText(obs.emoji, obs.x, obs.y); }
+
+                    if (obs.attackState === 'charging') {
+                        ctx.save(); ctx.strokeStyle = `rgba(168, 85, 247, ${Math.abs(Math.sin(frameCount*0.2))})`;
+                        ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(obs.x, obs.y); ctx.lineTo(obs.randomTargetX, obs.randomTargetY); ctx.stroke(); ctx.restore();
+                    } else if (obs.attackState === 'firing') {
+                        drawJaggedLightning(obs.x, obs.y, obs.randomTargetX, obs.randomTargetY, '#a855f7', 6);
+                        if (!plane.isProtected && !obs.hasHitLaser) {
+                            const dist = distToSegment({x: plane.x, y: plane.y}, {x: obs.x, y: obs.y}, {x: obs.randomTargetX, y: obs.randomTargetY});
+                            if (dist < 40) { lives -= 0.5; obs.hasHitLaser = true; triggerFlash(); updateUI(); }
+                        }
+                    }
+                } else {
+                    ctx.font = (isMobile ? '45px' : '65px') + ' Arial'; ctx.textAlign = 'center'; ctx.fillText(obs.emoji, obs.x, obs.y);
+                }
+                const hitX = isMobile ? 40 : 70; const hitY = isMobile ? 30 : 50;
+                if (Math.abs(obs.x - plane.x) < hitX && Math.abs(obs.y - plane.y) < hitY) { 
+                    if (!plane.isProtected) { lives -= 0.5; triggerFlash(); updateUI(); obstacles.splice(i,1); }
+                    else { obstacles.splice(i,1); }
+                }
+                if (obs.x < -300) obstacles.splice(i, 1);
+            }
+        });
+
+        words.forEach((word, i) => {
+            word.x -= (scrollSpeed + 2); 
+            ctx.fillStyle = 'white'; ctx.beginPath(); ctx.roundRect(word.x, word.y-word.h/2, word.w, word.h, 12); ctx.fill();
+            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.fillStyle = '#1e3a8a'; ctx.font = `bold ${isMobile ? 14 : 18}px Arial`; ctx.textAlign = 'center';
+            ctx.fillText(word.text, word.x + word.w/2, word.y + (isMobile ? 5 : 7));
+            
+            if (plane.x+40 > word.x && plane.x-40 < word.x+word.w && Math.abs(plane.y - word.y) < 35) {
+                if (word.correct) { score += 100; currentQuestionIdx++; words = []; if (currentQuestionIdx < questions.length) { setTimeout(spawnNextQuestion, 500); updateUI(); } else { startLanding(); } }
+                else { lives -= 1; triggerFlash(); updateUI(); words.splice(i, 1); }
+            }
+            if (word.x < -300) { if(word.correct) word.x = canvas.width+200; else words.splice(i,1); }
+        });
+
+        ctx.save(); ctx.translate(plane.x, plane.y); ctx.rotate(plane.angle);
+        if (plane.isProtected) {
+            ctx.beginPath(); ctx.arc(0, 0, plane.w*0.6, 0, Math.PI*2);
+            ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3; ctx.stroke();
+            ctx.fillStyle = 'rgba(74, 222, 128, 0.1)'; ctx.fill();
+        }
+        if (isImgAvailable(planeImg)) { ctx.drawImage(planeImg, -plane.w / 2, -plane.h / 2, plane.w, plane.h); }
+        else { ctx.font = (isMobile ? '50px' : '80px') + ' Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('✈️', 0, 0); }
+        ctx.restore();
+
+        if (runway) {
+            runway.x -= scrollSpeed; ctx.fillStyle = '#334155'; ctx.fillRect(runway.x, canvas.height-120, 3000, 120);
+            ctx.strokeStyle = '#fbbf24'; ctx.setLineDash([40, 30]); ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(runway.x, canvas.height-60); ctx.lineTo(runway.x+3000, canvas.height-60); ctx.stroke();
+            if (runway.x < 200) { 
+                plane.targetY = canvas.height-160; plane.targetX = runway.x + 800; 
+                if (Math.abs(plane.y - (canvas.height-160)) < 10) { gameActive = false; setTimeout(showWin, 800); } 
+            }
+        }
+        if (lives <= 0 && gameActive) { gameActive = false; showGameOver(); }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function startLanding() { currentPhase = 4; questionBox.innerText = "MISSION COMPLETED! Landing..."; runway = { x: canvas.width + 100 }; }
+    function showGameOver() { overlay.style.display = 'flex'; overlay.innerHTML = `<h1 class="text-5xl font-black mb-6 text-red-500 italic">MAYDAY!</h1><p class="text-xl mb-8 text-white">任務終止。</p><button class="btn" onclick="startGame()">再試一次</button>`; }
+    function showWin() { overlay.style.display = 'flex'; overlay.innerHTML = `<h1 class="text-5xl font-black mb-6 text-blue-400 italic">SUCCESS!</h1><p class="text-2xl font-bold text-amber-400 mb-8">最終得分: ${score}</p><button class="btn" onclick="startGame()">再戰一場</button>`; }
+    updateUI();
+</script>
+</body>
+</html>
