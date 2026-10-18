@@ -202,6 +202,7 @@
     let stars = [];
     let sphinxAttacks = []; 
     let runway = null;
+    let lastTornadoSpawnTime = 0;
     let frameCount = 0;
     let currentPhase = 1;
     let sphinxScrollX = 0;
@@ -274,7 +275,8 @@
     window.addEventListener('touchmove', (e) => { updatePointer(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, {passive: false});
 
     function startGame() {
-        gameActive = true; score = 0; lives = 5; 
+        gameActive = true; score = 0; lives = 5;
+        lastTornadoSpawnTime = performance.now(); 
         currentQuestionIdx = 0; currentPhase = 1;
         obstacles = []; words = []; sphinxAttacks = []; runway = null; sphinxScrollX = 0;
         scrollSpeed = 0; frameCount = 0; forceShelterOnNextMountain = false;
@@ -386,6 +388,31 @@
         }
     }
 
+    function drawSmallPyramids(scrollX) {
+        const spacing = isMobile ? 180 : 270;
+        const baseY = canvas.height * 0.78;
+        const offset = (scrollX * 0.22) % spacing;
+        ctx.save();
+        for (let i = -1; i <= Math.ceil(canvas.width / spacing) + 1; i++) {
+            const x = i * spacing - offset;
+            const height = isMobile ? 58 : 86;
+            const halfWidth = height * 0.85;
+            ctx.fillStyle = '#d7b571';
+            ctx.beginPath(); ctx.moveTo(x - halfWidth, baseY);
+            ctx.lineTo(x, baseY - height); ctx.lineTo(x + halfWidth, baseY); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#b48a48';
+            ctx.beginPath(); ctx.moveTo(x, baseY - height);
+            ctx.lineTo(x + halfWidth, baseY); ctx.lineTo(x + halfWidth * 0.18, baseY); ctx.closePath(); ctx.fill();
+            ctx.strokeStyle = 'rgba(120, 85, 38, 0.2)'; ctx.lineWidth = 1;
+            for (let row = 1; row < 5; row++) {
+                const width = halfWidth * row / 5;
+                const y = baseY - height + height * row / 5;
+                ctx.beginPath(); ctx.moveTo(x - width, y); ctx.lineTo(x + width, y); ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+
     function drawStrongTornado(obs) {
         obs.x -= (scrollSpeed + 0.8); 
         obs.timer = (obs.timer || 0) + 1;
@@ -487,7 +514,9 @@
         } else if (currentPhase === 2) {
             let dGrad = ctx.createLinearGradient(0, 0, 0, canvas.height); dGrad.addColorStop(0, '#fef3c7'); dGrad.addColorStop(1, '#fde68a');
             ctx.fillStyle = dGrad; ctx.fillRect(0,0,canvas.width, canvas.height);
-            sphinxScrollX += scrollSpeed; drawGizaSphinxRealistic(sphinxScrollX);
+            sphinxScrollX += scrollSpeed;
+            drawSmallPyramids(sphinxScrollX);
+            drawGizaSphinxRealistic(sphinxScrollX);
             if (frameCount % 450 === 0) { 
                 sphinxAttacks = [0, 1].map(id => ({ id, timer: 140, state: 'charging', targetX: Math.random() * canvas.width, targetY: Math.random() * canvas.height, hasHit: false })); 
             }
@@ -500,9 +529,14 @@
             ctx.fillStyle = 'white'; stars.forEach(s => { s.x -= (scrollSpeed + s.s); if(s.x < 0) s.x = canvas.width; ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill(); });
         }
 
-        const spawnInterval = currentPhase === 1 ? (isMobile ? 180 : 250) : (isMobile ? 240 : 360);
-        if (currentQuestionIdx < questions.length && frameCount % spawnInterval === 0 && scrollSpeed > 0.3) {
+        const spawnInterval = isMobile ? 240 : 360;
+        const now = performance.now();
+        const shouldSpawnObstacle = currentPhase === 1
+            ? now - lastTornadoSpawnTime >= 8000
+            : frameCount % spawnInterval === 0;
+        if (currentQuestionIdx < questions.length && shouldSpawnObstacle && scrollSpeed > 0.3) {
             if (currentPhase === 1) {
+                lastTornadoSpawnTime = now;
                 obstacles.push({ type: 'tornado', x: canvas.width + 500, timer: 0, hasHit: false });
                 forceShelterOnNextMountain = true; 
             } else if (currentPhase === 2) {
