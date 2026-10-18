@@ -209,29 +209,29 @@
     let scrollSpeed = 0; 
     let forceShelterOnNextMountain = false;
 
-    const commonDistractors = ["homestay","do some sightseeing","check","local","traditional","make sure","bank","stadium","by the way","across from","meet","happiness","friendly","hall","plan","president"];
+    const commonDistractors = ["dining suite","cartridge","message","courier","ladder","put on hold","account","review","package","cash","check","signature","enclosed","shelf","demonstration","contract","manager","machinery","parking lot","purchased"];
 
     const questions = [
-        {"q":"During my ______, I lived with a family in Canada.（寄宿）","options":["homestay","hall"],"correct":"homestay"},
-        {"q":"We will ______ and visit famous places this afternoon.（從事一些觀光活動）","options":["do some sightseeing","make sure"],"correct":"do some sightseeing"},
-        {"q":"Please ______ the map before we leave.（查看）","options":["check","meet"],"correct":"check"},
-        {"q":"Our guide took us to a ______ market near her home.（本地的）","options":["local","friendly"],"correct":"local"},
-        {"q":"We tried ______ food that families have cooked for generations.（傳統的）","options":["traditional","local"],"correct":"traditional"},
-        {"q":"Please ______ that you have your passport before leaving.（確定）","options":["make sure","do some sightseeing"],"correct":"make sure"},
-        {"q":"I need to get some money from the ______.（銀行）","options":["bank","stadium"],"correct":"bank"},
-        {"q":"Thousands of fans watched the game at the ______.（體育館）","options":["stadium","bank"],"correct":"stadium"},
-        {"q":"Oh, ______, did you bring your camera?（順便提一下）","options":["by the way","across from"],"correct":"by the way"},
-        {"q":"The library is ______ the school, on the other side of the street.（在…對面）","options":["across from","by the way"],"correct":"across from"},
-        {"q":"I hope to ______ new people during my trip.（遇見）","options":["meet","check"],"correct":"meet"},
-        {"q":"Spending time with my family brings me great ______.（幸福）","options":["happiness","homestay"],"correct":"happiness"},
-        {"q":"Our host was very ______ and welcomed us with a smile.（友善的）","options":["friendly","traditional"],"correct":"friendly"},
-        {"q":"All the students gathered in the ______ for the ceremony.（禮堂）","options":["hall","bank"],"correct":"hall"},
-        {"q":"We made a ______ for our weekend trip.（計畫）","options":["plan","happiness"],"correct":"plan"},
-        {"q":"The ______ gave a speech to the nation.（總統）","options":["president","stadium"],"correct":"president"},
-        {"q":"A ______ gives visitors a chance to experience family life abroad.（寄宿）","options":["homestay","plan"],"correct":"homestay"},
-        {"q":"After breakfast, we can ______ around the old town.（從事一些觀光活動）","options":["do some sightseeing","make sure"],"correct":"do some sightseeing"},
-        {"q":"Before you go out, ______ that the door is locked.（確定）","options":["make sure","do some sightseeing"],"correct":"make sure"},
-        {"q":"Our hotel is ______ the park; just cross the road to get there.（在…對面）","options":["across from","by the way"],"correct":"across from"}
+        {"q":"The new ______ includes a table and six matching chairs.（餐桌椅組）","options":["dining suite","machinery"],"correct":"dining suite"},
+        {"q":"The printer needs a new ink ______.（墨水匣）","options":["cartridge","signature"],"correct":"cartridge"},
+        {"q":"Please leave a ______ if the manager is unavailable.（訊息）","options":["message","ladder"],"correct":"message"},
+        {"q":"The ______ delivered the documents to our office.（快遞員）","options":["courier","manager"],"correct":"courier"},
+        {"q":"Use a ______ to reach the light near the ceiling.（梯子）","options":["ladder","contract"],"correct":"ladder"},
+        {"q":"The project was ______ until more funding became available.（被擱置）","options":["put on hold","enclosed"],"correct":"put on hold"},
+        {"q":"She opened a savings ______ at the bank.（帳戶）","options":["account","package"],"correct":"account"},
+        {"q":"Please ______ the report carefully before the meeting.（審視）","options":["review","cash"],"correct":"review"},
+        {"q":"A ______ containing the books arrived this morning.（包裹）","options":["package","check"],"correct":"package"},
+        {"q":"This shop only accepts ______, so bring some notes and coins.（現金）","options":["cash","signature"],"correct":"cash"},
+        {"q":"He wrote a ______ to pay the supplier instead of using cash.（支票）","options":["check","message"],"correct":"check"},
+        {"q":"Please write your ______ on the line at the bottom of the form.（簽名）","options":["signature","cartridge"],"correct":"signature"},
+        {"q":"A copy of the invoice is ______ with this letter.（附上）","options":["enclosed","purchased"],"correct":"enclosed"},
+        {"q":"Place the reference books on the top ______.（架子）","options":["shelf","parking lot"],"correct":"shelf"},
+        {"q":"The trainer gave a ______ of how to operate the printer.（示範）","options":["demonstration","account"],"correct":"demonstration"},
+        {"q":"Both companies signed a ______ agreeing to the terms.（契約）","options":["contract","dining suite"],"correct":"contract"},
+        {"q":"The store ______ supervises the staff and approves their schedules.（經理）","options":["manager","courier"],"correct":"manager"},
+        {"q":"Workers must wear safety equipment around the factory ______.（機械）","options":["machinery","shelf"],"correct":"machinery"},
+        {"q":"Employees can leave their cars in the ______ behind the office.（停車場）","options":["parking lot","demonstration"],"correct":"parking lot"},
+        {"q":"The recently ______ equipment will be installed next week.（被購置的）","options":["purchased","enclosed"],"correct":"purchased"}
     ];
 
     function resize() {
