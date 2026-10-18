@@ -288,11 +288,18 @@
         requestAnimationFrame(gameLoop);
     }
 
+    function refillEnergy() {
+        lives = Math.min(5, lives + 1);
+        updateUI();
+    }
+
     function announcePhase(p) {
+        const clearedPhase = p === currentPhase + 1;
+        if (clearedPhase) refillEnergy();
         currentPhase = p;
         obstacles = [];
         sphinxAttacks = [];
-        announcer.innerText = `PHASE ${p}`; announcer.style.opacity = '1';
+        announcer.innerText = `PHASE ${p}${clearedPhase ? " · 能量補給 +1 ⭐" : ""}`; announcer.style.opacity = '1';
         setTimeout(() => announcer.style.opacity = '0', 2000);
         const tags = ["Storm Tracking", "Sphinx Ruins", "Cosmic Void", "Landing"];
         phaseTag.innerText = `PHASE ${p}: ${tags[p-1] || ""}`;
@@ -629,7 +636,7 @@
         requestAnimationFrame(gameLoop);
     }
 
-    function startLanding() { currentPhase = 4; questionBox.innerText = "MISSION COMPLETED! Landing..."; runway = { x: canvas.width + 100 }; }
+    function startLanding() { if (currentPhase === 3) refillEnergy(); currentPhase = 4; questionBox.innerText = "MISSION COMPLETED! Landing..."; runway = { x: canvas.width + 100 }; }
     function showGameOver() { overlay.style.display = 'flex'; overlay.innerHTML = `<h1 class="text-5xl font-black mb-6 text-red-500 italic">MAYDAY!</h1><p class="text-xl mb-8 text-white">任務終止。</p><button class="btn" onclick="startGame()">再試一次</button>`; }
     function showWin() { overlay.style.display = 'flex'; overlay.innerHTML = `<h1 class="text-5xl font-black mb-6 text-blue-400 italic">SUCCESS!</h1><p class="text-2xl font-bold text-amber-400 mb-8">最終得分: ${score}</p><button class="btn" onclick="startGame()">再戰一場</button>`; }
     updateUI();
