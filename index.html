@@ -208,29 +208,29 @@
     let scrollSpeed = 0; 
     let forceShelterOnNextMountain = false;
 
-    const commonDistractors = ["break", "open", "paper", "ticket", "move", "box", "lose", "increase", "wall", "plain", "informal", "remove", "guest", "doctor", "manual", "lot", "follow", "pilot", "driver", "shoes"];
+    const commonDistractors = ["mechanic","secretary","binder","chef","vet","server","technician","reporter","apply","fast-paced","career","marketing","position","electronic","gadget","lid","graduate","sort of","qualification","look through"];
 
     const questions = [
-        { q: "I will ______ the magazine while I wait for the doctor.", options: ["look through", "break"], correct: "look through" },
-        { q: "If nobody answers the phone, please ______.", options: ["leave a message", "open"], correct: "leave a message" },
-        { q: "You need to update your ______ before applying for the job.", options: ["resume", "paper"], correct: "resume" },
-        { q: "Did you make a ______ at the restaurant for tonight?", options: ["reservation", "ticket"], correct: "reservation" },
-        { q: "Can you help me ______ a meeting for next week?", options: ["arrange", "move"], correct: "arrange" },
-        { q: "Make sure the ______ is tight so the water doesn't spill.", options: ["lid", "box"], correct: "lid" },
-        { q: "Our team managed to ______ the champions last night.", options: ["beat", "lose"], correct: "beat" },
-        { q: "This medicine will help ______ the pain in your back.", options: ["ease", "increase"], correct: "ease" },
-        { q: "Please put the books back on the top ______.", options: ["shelf", "wall"], correct: "shelf" },
-        { q: "We are going to a ______ restaurant for our anniversary.", options: ["fancy", "plain"], correct: "fancy" },
-        { q: "I felt ______ in my suit because everyone else wore jeans.", options: ["overdressed", "informal"], correct: "overdressed" },
-        { q: "Please ______ your photo to the application form.", options: ["attach", "remove"], correct: "attach" },
-        { q: "The ______ brought us our drinks very quickly.", options: ["server", "guest"], correct: "server" },
-        { q: "The ______ is busy answering phone calls and organizing files.", options: ["secretary", "doctor"], correct: "secretary" },
-        { q: "Most ______ devices now come with a touch screen.", options: ["electronic", "manual"], correct: "electronic" },
-        { q: "Would you like a small ______ of chocolate cake?", options: ["bit", "lot"], correct: "bit" },
-        { q: "The guide will ______ the tourists through the forest.", options: ["lead", "follow"], correct: "lead" },
-        { q: "We need a ______ to fix the computer network.", options: ["technician", "pilot"], correct: "technician" },
-        { q: "My car broke down, so I took it to a ______.", options: ["mechanic", "driver"], correct: "mechanic" },
-        { q: "She bought some new ______ for the cold winter.", options: ["clothes", "shoes"], correct: "clothes" }
+        {"q":"The ______ repaired my car.（技師）","options":["mechanic","secretary"],"correct":"mechanic"},
+        {"q":"The ______ answers calls and organizes files.（秘書）","options":["secretary","chef"],"correct":"secretary"},
+        {"q":"Keep these documents in a ______.（活頁夾）","options":["binder","gadget"],"correct":"binder"},
+        {"q":"The ______ prepared a delicious meal.（大廚）","options":["chef","reporter"],"correct":"chef"},
+        {"q":"We took our sick dog to the ______.（獸醫）","options":["vet","mechanic"],"correct":"vet"},
+        {"q":"The ______ brought our food to the table.（服務生）","options":["server","technician"],"correct":"server"},
+        {"q":"A ______ fixed the computer network.（技術員）","options":["technician","server"],"correct":"technician"},
+        {"q":"The ______ interviewed the mayor for the news.（記者）","options":["reporter","vet"],"correct":"reporter"},
+        {"q":"I want to ______ for this job.（申請）","options":["apply","graduate"],"correct":"apply"},
+        {"q":"She enjoys working in a ______ environment.（快速步調）","options":["fast-paced","electronic"],"correct":"fast-paced"},
+        {"q":"He hopes to build a ______ in teaching.（職業）","options":["career","lid"],"correct":"career"},
+        {"q":"Our ______ team promotes new products.（行銷）","options":["marketing","qualification"],"correct":"marketing"},
+        {"q":"She applied for a teaching ______ at the school.（職位）","options":["position","binder"],"correct":"position"},
+        {"q":"Please turn off all ______ devices.（電子的）","options":["electronic","fast-paced"],"correct":"electronic"},
+        {"q":"This useful little ______ can open bottles.（小物品）","options":["gadget","career"],"correct":"gadget"},
+        {"q":"Put the ______ on the jar.（蓋子）","options":["lid","position"],"correct":"lid"},
+        {"q":"I will ______ from high school next year.（畢業）","options":["graduate","apply"],"correct":"graduate"},
+        {"q":"This machine is ______ like a small computer.（近似）","options":["sort of","look through"],"correct":"sort of"},
+        {"q":"A teaching certificate is a required ______ for this job.（資格）","options":["qualification","marketing"],"correct":"qualification"},
+        {"q":"Please ______ these files before the meeting.（瀏覽）","options":["look through","sort of"],"correct":"look through"}
     ];
 
     function resize() {
