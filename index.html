@@ -209,29 +209,29 @@
     let scrollSpeed = 0; 
     let forceShelterOnNextMountain = false;
 
-    const commonDistractors = ["mechanic","secretary","binder","chef","vet","server","technician","reporter","apply","fast-paced","career","marketing","position","electronic","gadget","lid","graduate","sort of","qualification","look through"];
+    const commonDistractors = ["mechanic","secretary","salary","interview","vet","server","nervous","reporter","dress smart","resume","career","marketing","job advertisement","electronic","certificate","lid","graduate","sort of","qualification","be on time"];
 
     const questions = [
-        {"q":"The ______ repaired my car.（技師）","options":["mechanic","secretary"],"correct":"mechanic"},
-        {"q":"The ______ answers calls and organizes files.（秘書）","options":["secretary","chef"],"correct":"secretary"},
-        {"q":"Keep these documents in a ______.（活頁夾）","options":["binder","gadget"],"correct":"binder"},
-        {"q":"The ______ prepared a delicious meal.（大廚）","options":["chef","reporter"],"correct":"chef"},
-        {"q":"We took our sick dog to the ______.（獸醫）","options":["vet","mechanic"],"correct":"vet"},
-        {"q":"The ______ brought our food to the table.（服務生）","options":["server","technician"],"correct":"server"},
-        {"q":"A ______ fixed the computer network.（技術員）","options":["technician","server"],"correct":"technician"},
-        {"q":"The ______ interviewed the mayor for the news.（記者）","options":["reporter","vet"],"correct":"reporter"},
-        {"q":"I want to ______ for this job.（申請）","options":["apply","graduate"],"correct":"apply"},
-        {"q":"She enjoys working in a ______ environment.（快速步調）","options":["fast-paced","electronic"],"correct":"fast-paced"},
-        {"q":"He hopes to build a ______ in teaching.（職業）","options":["career","lid"],"correct":"career"},
-        {"q":"Our ______ team promotes new products.（行銷）","options":["marketing","qualification"],"correct":"marketing"},
-        {"q":"She applied for a teaching ______ at the school.（職位）","options":["position","binder"],"correct":"position"},
-        {"q":"Please turn off all ______ devices.（電子的）","options":["electronic","fast-paced"],"correct":"electronic"},
-        {"q":"This useful little ______ can open bottles.（小物品）","options":["gadget","career"],"correct":"gadget"},
-        {"q":"Put the ______ on the jar.（蓋子）","options":["lid","position"],"correct":"lid"},
-        {"q":"I will ______ from high school next year.（畢業）","options":["graduate","apply"],"correct":"graduate"},
-        {"q":"This machine is ______ like a small computer.（近似）","options":["sort of","look through"],"correct":"sort of"},
-        {"q":"A teaching certificate is a required ______ for this job.（資格）","options":["qualification","marketing"],"correct":"qualification"},
-        {"q":"Please ______ these files before the meeting.（瀏覽）","options":["look through","sort of"],"correct":"look through"}
+        {"q":"A skilled ______ checked the engine before our trip.（技師）","options":["mechanic","vet"],"correct":"mechanic"},
+        {"q":"The manager asked the ______ to schedule a meeting.（秘書）","options":["secretary","server"],"correct":"secretary"},
+        {"q":"The company pays my ______ at the end of each month.（薪水）","options":["salary","lid"],"correct":"salary"},
+        {"q":"My job ______ is at ten tomorrow morning.（面試）","options":["interview","certificate"],"correct":"interview"},
+        {"q":"The ______ gave our cat some medicine.（獸醫）","options":["vet","reporter"],"correct":"vet"},
+        {"q":"We asked the ______ for the restaurant menu.（服務生）","options":["server","mechanic"],"correct":"server"},
+        {"q":"I feel ______ before speaking in front of a crowd.（緊張）","options":["nervous","electronic"],"correct":"nervous"},
+        {"q":"A ______ wrote a news story about the new factory.（記者）","options":["reporter","secretary"],"correct":"reporter"},
+        {"q":"Remember to ______ when you meet your future employer.（穿著得體）","options":["dress smart","graduate"],"correct":"dress smart"},
+        {"q":"Please email your ______ with your work experience.（履歷表）","options":["resume","salary"],"correct":"resume"},
+        {"q":"She chose nursing as her lifelong ______.（職業）","options":["career","interview"],"correct":"career"},
+        {"q":"He works in ______ and helps attract new customers.（行銷）","options":["marketing","qualification"],"correct":"marketing"},
+        {"q":"I found a ______ for a hotel receptionist online.（工作廣告）","options":["job advertisement","lid"],"correct":"job advertisement"},
+        {"q":"The store sells ______ equipment such as tablets.（電子的）","options":["electronic","nervous"],"correct":"electronic"},
+        {"q":"After passing the course, she received a professional ______.（證照）","options":["certificate","job advertisement"],"correct":"certificate"},
+        {"q":"Lift the ______ to see what is inside the box.（蓋子）","options":["lid","resume"],"correct":"lid"},
+        {"q":"After I ______ from college, I plan to find a job.（畢業）","options":["graduate","dress smart"],"correct":"graduate"},
+        {"q":"This training room is ______ like a real office.（近似）","options":["sort of","be on time"],"correct":"sort of"},
+        {"q":"Experience with animals is an important ______ for this role.（資格）","options":["qualification","marketing"],"correct":"qualification"},
+        {"q":"Leave home early so you can ______ for work.（準時）","options":["be on time","sort of"],"correct":"be on time"}
     ];
 
     function resize() {
