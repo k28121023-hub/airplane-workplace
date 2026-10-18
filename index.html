@@ -604,7 +604,13 @@
             ctx.fillStyle = 'white'; ctx.beginPath(); ctx.roundRect(word.x, word.y-word.h/2, word.w, word.h, 12); ctx.fill();
             ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.stroke();
             ctx.fillStyle = '#1e3a8a'; ctx.font = `bold ${isMobile ? 14 : 18}px Arial`; ctx.textAlign = 'center';
-            ctx.fillText(word.text, word.x + word.w/2, word.y + (isMobile ? 5 : 7));
+            const answerTextWidth = word.w - 16;
+            const measuredTextWidth = ctx.measureText(word.text).width;
+            if (measuredTextWidth > answerTextWidth) {
+                const fittedFontSize = (isMobile ? 14 : 18) * answerTextWidth / measuredTextWidth;
+                ctx.font = `bold ${fittedFontSize}px Arial`;
+            }
+            ctx.fillText(word.text, word.x + word.w/2, word.y + (isMobile ? 5 : 7), answerTextWidth);
             
             if (plane.x+40 > word.x && plane.x-40 < word.x+word.w && Math.abs(plane.y - word.y) < 35) {
                 if (word.correct) { score += 100; currentQuestionIdx++; words = []; if (currentQuestionIdx < questions.length) { setTimeout(spawnNextQuestion, 500); updateUI(); } else { startLanding(); } }
